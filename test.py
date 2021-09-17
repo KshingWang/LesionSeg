@@ -155,7 +155,7 @@ if __name__ == '__main__':
     opt_test = TestOptions().parse()
 
     # hard-code some parameters for test
-    opt_test.num_threads = 1   # test code only supports num_threads = 1
+    opt_test.num_threads = 0   # test code only supports num_threads = 1
     opt_test.batch_size = 1    # test code only supports batch_size = 1
     opt_test.serial_batches = True  # no shuffle
     opt_test.no_flip = True    # no flip

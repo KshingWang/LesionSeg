@@ -30,7 +30,7 @@ def set_seed():
 def get_val_test_opts(opt_train):
     opt_val = copy.deepcopy(opt_train)
     opt_val.phase = 'val'
-    opt_val.num_threads = 1
+    opt_val.num_threads = 0
     opt_val.batch_size = 1
     opt_val.serial_batches = True  # no shuffle
     opt_val.no_flip = True  # no flip
@@ -55,6 +55,7 @@ if __name__ == '__main__':
 
     opt = TrainOptions().parse()
     opt_val, opt_test = get_val_test_opts(opt)
+    opt_val.num_threads = 0
     test_index = opt.n_fold - 1 if opt.test_index is None else opt.test_index
     test_index = opt.n_fold if 'test' not in opt.test_mode else test_index
     val_indices = [x for x in range(opt.n_fold) if x != test_index] if opt.test_mode != 'test' else [test_index]
