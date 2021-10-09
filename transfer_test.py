@@ -12,8 +12,8 @@ def normalize_zerone(data_path):
     image = nib.load(data_path)
     data = image.get_fdata()
     normalize = np.array([(x - np.amin(data)) / (np.amax(data) - np.amin(data)) for x in data])
-    normalize1 = np.array([(x - np.min(data)) / (np.max(data) - np.min(data)) for x in data])
-    return nib.Nifti1Image(normalize, image.affine, image.header), nib.Nifti1Image(normalize1, image.affine, image.header)
+    #normalize1 = np.array([(x - np.min(data)) / (np.max(data) - np.min(data)) for x in data])
+    return nib.Nifti1Image(normalize, image.affine, image.header)
 
 # with os.scandir('/home/jackywang/Documents/normalized_ISBI2015') as entries:
 #     for entry in entries:
@@ -21,7 +21,10 @@ def normalize_zerone(data_path):
 #         normed = normalize_zerone(filepath)
 #         nib.save(normed, os.path.join('/home/jackywang/Documents/processed_folder',entry))
 
-
-normed,normed1 = normalize_zerone('/home/jackywang/Documents/ISBI_2015/training/training01/preprocessed/training01_01_flair_pp.nii')
-nib.save(normed,'test1.nii')
-nib.save(normed1,'test2.nii')
+path = '/home/jackywang/Documents/normalized_ISBI2015/challenge'
+print(os.listdir(path))
+#normed,normed1 = normalize_zerone('/home/jackywang/Documents/ISBI_2015/training/training01/preprocessed/training01_01_flair_pp.nii')
+#nib.save(normed,'test1.nii')
+#nib.save(normed1,'test2.nii')
+normed = normalize_zerone(os.path.join(path,'resample_03_01_t2.nii'))
+nib.save(normed,os.path.join(path,'norm_03_01_t2.nii'))

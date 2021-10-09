@@ -13,7 +13,9 @@ PATH_DATASET = os.path.join(os.path.expanduser('~'), 'Documents', 'normalized_IS
 # TODO: change the following constants based on your dataset
 #MODALITIES = ['t1', 'flair', 't2', 'pd']
 MODALITIES = ['t1','flair','t2']
-MASKS = ['mask1', 'mask2']
+#MODALITIES = ['t1']
+
+MASKS = ['mask','mask1', 'mask2']
 #MASKS = ['mask']
 SUFFIX = 'nii'
 
