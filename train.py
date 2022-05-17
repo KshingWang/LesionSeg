@@ -62,7 +62,7 @@ if __name__ == '__main__':
     models = []
     data_generator = DataGenerator(opt.dataroot)
     for val_index in val_indices:
-        data_generator.build_dataset(val_index, test_index, opt.test_mode)
+        # data_generator.build_dataset(val_index, test_index, opt.test_mode)
         dataset, dataset_size = create_data_loader(opt)
         dataset_val, dataset_size_val = create_data_loader(opt_val)
         dataset_test, dataset_size_test = create_data_loader(opt_test)
@@ -91,18 +91,19 @@ if __name__ == '__main__':
 
                 if total_steps % opt.display_freq == 0:
                     save_result = total_steps % opt.update_html_freq == 0
-                    visualizer.display_current_results(model.get_current_visuals(), epoch, save_result)
+                    # visualizer.display_current_results(model.get_current_visuals(), epoch, save_result)
 
                 if total_steps % opt.print_freq == 0:
                     losses = model.get_current_losses()
                     t = (time.time() - iter_start_time) / opt.batch_size
                     visualizer.print_current_losses(epoch, epoch_iter, losses, t, t_data)
-                    if opt.display_id > 0:
-                        visualizer.plot_current_losses(epoch, float(epoch_iter) / dataset_size, opt, losses)
+                    # if opt.display_id > 0:
+                    #     visualizer.plot_current_losses(epoch, float(epoch_iter) / dataset_size, opt, losses)
 
                 iter_data_time = time.time()
 
             if epoch % opt.save_epoch_freq == 0:
+            # if epoch_iter % 5000 == 0:
                 print('saving the model at the end of epoch %d, iters %d' % (epoch, total_steps))
                 model.save_networks(epoch)
 
@@ -111,10 +112,10 @@ if __name__ == '__main__':
                 if opt_val.eval_val:
                     model.eval()
                 losses_val = test.model_test([model], dataset_val, opt_val, dataset_size_val)
-                if opt.display_id > 0:
-                    visualizer.plot_val_losses(epoch, 0, opt_val, losses_val, model_suffix=model_suffix)
-                else:
-                    visualizer.save_val_losses(epoch, 0, opt_val, losses_val, model_suffix=model_suffix)
+                #if opt.display_id > 0:
+                #    visualizer.plot_val_losses(epoch, 0, opt_val, losses_val, model_suffix=model_suffix)
+                #else:
+                #    visualizer.save_val_losses(epoch, 0, opt_val, losses_val, model_suffix=model_suffix)
                 visualizer.print_val_losses(epoch, losses_val, time.time() - start_time_val)
                 model.train()
 

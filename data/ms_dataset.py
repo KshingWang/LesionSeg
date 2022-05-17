@@ -39,7 +39,6 @@ class MsDataset(BaseDataset):
             data_return[modality] = transforms.ToTensor()(data_all_modalities[modality])
         mask = data_return['mask']
         _, h, w2 = mask.size()
-
         if w2 >= self.opt.trainSize and h >= self.opt.trainSize:
             cnt = 0
             while True:

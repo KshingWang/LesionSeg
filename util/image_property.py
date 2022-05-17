@@ -32,6 +32,9 @@ def normalize_image(vol, contrast):
     # copied from FLEXCONN
     # slightly changed to fit our implementation
     temp = vol[np.nonzero(vol)].astype(float)
+    if len(temp) == 0:
+        print('fkk')
+        return 1001
     q = np.percentile(temp, 99)
     temp = temp[temp <= q]
     temp = temp.reshape(-1, 1)
@@ -58,7 +61,7 @@ def normalize_image(vol, contrast):
         # norm_vol = vol/peak
         # norm_vol[norm_vol > 1.25] = 1.25
         # norm_vol = norm_vol/1.25
-    elif contrast.lower() in ['t2', 'pd', 'flair', 'fl']:
+    elif contrast.lower() in ['t2', 'pd', 'flair', 'fl', 'flairswi', 'fi','r2']:
         peak_height = np.amax(heights)
         idx = np.where(heights == peak_height)
         peak = peaks[idx]
@@ -67,7 +70,9 @@ def normalize_image(vol, contrast):
         # norm_vol[norm_vol > 3.5] = 3.5
         # norm_vol = norm_vol / 3.5
     else:
-        print("Contrast must be either t1,t2,pd, or flair. You entered %s. Returning 0." % contrast)
+        peak = 1
+        print('use 1 instead, %s' % contrast)
+        #print("Contrast must be either t1,t2,pd, or flair. You entered %s. Returning 0." % contrast)
 
     # return peak, norm_vol
     return peak

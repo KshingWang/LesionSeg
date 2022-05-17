@@ -49,6 +49,7 @@ class Ms3dDataset(BaseDataset):
         data_all_modalities = {}
         if os.path.exists(paths_this_scan[-1]):
             data_all_modalities['mask'] = nib.load(paths_this_scan[-1]).get_fdata()
+
         for i, modality in enumerate(MODALITIES):
             path_modality = paths_this_scan[i]
             label_modality = hash_file(path_modality)

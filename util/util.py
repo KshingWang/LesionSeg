@@ -3,6 +3,8 @@ import torch
 import numpy as np
 from PIL import Image
 import os
+import nibabel as nib
+import pickle
 
 
 # Converts a Tensor into an image array (numpy)
@@ -61,3 +63,24 @@ def mkdirs(paths):
 def mkdir(path):
     if not os.path.exists(path):
         os.makedirs(path)
+
+def pkltonii(path, file):
+    dir = os.path.join(path, file)
+    with open(dir, 'rb') as f:
+        data = pickle.load(f)
+    # img = pickle.load(path)
+    img = np.concatenate((data['t1'],data['t2'],data['flair']),axis=2)
+    img = np.moveaxis(img,-1,0)
+    print(img.shape)
+    imgg = nib.Nifti1Image(img, np.eye(4))
+    msk = data['mask']
+    mskk = np.moveaxis(msk,-1,0)
+    mask = nib.Nifti1Image(mskk, np.eye(4))
+
+    nib.save(imgg, os.path.join('/home/hao/Documents/Datasets/ms_isbi2015/train_2D','img_'+file.split('.')[0]+'.nii'))
+    nib.save(mask, os.path.join('/home/hao/Documents/Datasets/ms_isbi2015/train_2D','mask_'+file.split('.')[0]+'.nii'))
+
+
+# for i in sorted(os.listdir('/home/hao/Documents/normalized_ISBI2015/train/')):
+#     print(i)
+#     pkltonii('/home/hao/Documents/normalized_ISBI2015/train/',i)

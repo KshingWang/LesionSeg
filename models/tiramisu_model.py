@@ -1,3 +1,5 @@
+import torch
+
 from models.tiramisu_layers import *
 
 
@@ -42,6 +44,11 @@ class FCDenseNet(nn.Module):
         prev_block_channels = growth_rate*bottleneck_layers
         cur_channels_count += prev_block_channels
 
+
+        # Classification #
+        self.avgpool = nn.AdaptiveAvgPool2d(1)
+        self.head = nn.Linear(prev_block_channels, 4)
+
         #######################
         #   Upsampling path   #
         #######################
@@ -77,6 +84,8 @@ class FCDenseNet(nn.Module):
         self.tanh = nn.Tanh()
         # self.softmax = nn.LogSoftmax(dim=1)
 
+
+
     def forward(self, x):
         out = self.firstconv(x)
 
@@ -87,13 +96,16 @@ class FCDenseNet(nn.Module):
             out = self.transDownBlocks[i](out)
 
         out = self.bottleneck(out)
-        for i in range(len(self.up_blocks)):
-            skip = skip_connections.pop()
-            out = self.transUpBlocks[i](out, skip)
-            out = self.denseBlocksUp[i](out)
-
-        out = self.finalConv(out)
-        out = self.tanh(out)
+        out = self.avgpool(out)
+        out = torch.flatten(out, 1)
+        out = self.head(out)
+        # for i in range(len(self.up_blocks)):
+        #     skip = skip_connections.pop()
+        #     out = self.transUpBlocks[i](out, skip)
+        #     out = self.denseBlocksUp[i](out)
+        #
+        # out = self.finalConv(out)
+        # out = self.tanh(out)
         # out = self.softmax(out)
         return out
 

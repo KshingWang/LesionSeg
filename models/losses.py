@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
+# from pl_bolts.models.self_supervised.evaluator import Flatten
 
 
 def dice_loss(input, target):
@@ -24,6 +25,42 @@ def focal_loss(input, target, alpha, gamma, eps=1e-6):
                 input ** gamma) * torch.log(1 - input)
     return loss.mean()
 
+class Projection(nn.Module):
+    def __init__(self, input_dim=48, hidden_dim=48, output_dim=32):
+        super().__init__()
+        self.output_dim = output_dim
+        self.input_dim = input_dim
+        self.hidden_dim = hidden_dim
+
+        self.model = nn.Sequential(
+            nn.AdaptiveAvgPool2d((1, 1)),
+            Flatten(),
+            nn.Linear(self.input_dim, self.hidden_dim, bias=False),
+            nn.BatchNorm1d(self.hidden_dim),
+            nn.ReLU(),
+            nn.Linear(self.hidden_dim, self.output_dim, bias=False))
+    def forward(self, x):
+        x = self.model(x)
+        return F.normalize(x, dim=1)
+
+def nt_xent_loss(out_1, out_2, temperature):
+    out = torch.cat([out_1, out_2], dim=0)
+    n_samples = len(out)
+
+    # Full similarity matrix
+    cov = torch.mm(out, out.t().contiguous())
+    sim = torch.exp(cov / temperature)
+
+    mask = ~torch.eye(n_samples, device=sim.device).bool()
+    neg = sim.masked_select(mask).view(n_samples, -1).sum(dim=-1)
+
+    # Positive similarity
+    pos = torch.exp(torch.sum(out_1 * out_2, dim=-1) / temperature)
+    pos = torch.cat([pos, pos], dim=0)
+    neg[neg<1e-6] = 1.0
+
+    loss = -torch.log(pos / neg).mean()
+    return loss
 
 class FocalLoss(nn.Module):
     # this loss function need input in the range (-1, 1), and target in (0, 1)

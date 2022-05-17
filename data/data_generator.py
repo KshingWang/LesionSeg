@@ -25,6 +25,7 @@ class DataGenerator:
         self.dir_this_phase = None
         self.axes = [0, 1, 2]
         self.rotation_2d = -1
+
         with open(os.path.join(self.dataroot, 'properties.json'), 'r') as f:
             self.dic_properties = json.load(f)
         with open(os.path.join(self.dataroot, 'ids.json'), 'r') as f:
@@ -110,6 +111,7 @@ class DataGenerator:
         for modality in modalities:
             path_src = self.dic_ids[str(subject_id)][str(timepoint)]['modalities'][modality]
             path_dst = os.path.join(self.dir_this_phase, mask + '_%s%d_%s.%s' % (phase, self.sample_3d_count, modality, SUFFIX))
+            print(path_src)
             shutil.copyfile(path_src, path_dst)
         path_src_mask = self.dic_ids[str(subject_id)][str(timepoint)]['mask'][mask]
         path_dst_mask = os.path.join(self.dir_this_phase, mask + '_%s%d_mask.%s' % (phase, self.sample_3d_count, SUFFIX))

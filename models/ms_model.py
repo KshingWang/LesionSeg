@@ -5,6 +5,7 @@ from .base_model import BaseModel
 from .losses import FocalLoss, dice_loss
 from . import networks
 from configurations import *
+import numpy as np
 
 
 class MsModel(BaseModel):
@@ -39,7 +40,7 @@ class MsModel(BaseModel):
                     self.loss_names += [k]
                     setattr(self, 'criterion_%s' % k, criterions[k])
                     self.criterion_names.append(k)
-            assert len(self.criterion_names), 'should use at least one loss function in L2, focal, dice'
+            # assert len(self.criterion_names), 'should use at least one loss function in L2, focal, dice'
 
             self.fake_AB_pool = ImagePool(opt.pool_size)
 
@@ -55,6 +56,7 @@ class MsModel(BaseModel):
             else:
                 params_to_update = self.netG.parameters()
             self.optimizers = [torch.optim.Adam(params_to_update, lr=opt.lr, betas=(opt.beta1, 0.999))]
+            self.loss_ce = nn.CrossEntropyLoss()
 
     def set_input(self, input):
         for modality in MODALITIES:
@@ -62,22 +64,40 @@ class MsModel(BaseModel):
         self.real_mask = input['mask'].to(self.device)
 
     def forward(self):
-        self.fake_mask = self.netG(torch.cat([getattr(self, k) for k in MODALITIES], 1))
+        input = torch.cat([getattr(self, k) for k in MODALITIES], 1)
+        if input.dtype != 'torch.float32':
+            input = input.float()
+        self.fake_mask = self.netG(input)
 
     def backward_G(self):
         self.loss_total = 0
-        fake_mask = (self.fake_mask + 1) / 2
+        #fake_mask = (self.fake_mask + 1) / 2
         real_mask = (self.real_mask + 1) / 2
-        for k, criterion_name in enumerate(self.criterion_names):
-            criterion = getattr(self, 'criterion_%s' % criterion_name)
-            if criterion_name == 'dice':
-                tmp = criterion(fake_mask, real_mask) * self.opt.lambda_dice
-            elif self.criterion_names[k] == 'focal':
-                tmp = criterion(self.fake_mask, real_mask) * self.opt.lambda_focal
+        real_mask = real_mask.cpu().detach().numpy()
+        mask_classes = []
+        for i in range(16):
+            print(real_mask)
+            tmp = real_mask[i,:,:]
+            tmp = tmp[np.nonzero(tmp)]
+            u, c = np.unique(tmp, return_counts=True)
+            if len(u) == 0:
+                label_class = 0.0
             else:
-                tmp = criterion(self.fake_mask, self.real_mask) * self.opt.lambda_L2
-            self.loss_total += tmp
-            setattr(self, 'loss_%s' % self.criterion_names[k], tmp)
+                label_class = u[c.argmax()]
+            mask_classes.append(label_class)
+        mask_classes = np.array(mask_classes)
+        mask_classes = torch.tensor(mask_classes).cuda()
+        self.loss_total += self.loss_ce(self.fake_mask, mask_classes.long())
+        # for k, criterion_name in enumerate(self.criterion_names):
+        #     criterion = getattr(self, 'criterion_%s' % criterion_name)
+        #     if criterion_name == 'dice':
+        #         tmp = criterion(fake_mask, real_mask) * self.opt.lambda_dice
+        #     elif self.criterion_names[k] == 'focal':
+        #         tmp = criterion(self.fake_mask, real_mask) * self.opt.lambda_focal
+        #     else:
+        #         tmp = criterion(self.fake_mask, self.real_mask) * self.opt.lambda_L2
+        #     self.loss_total += tmp
+        #     setattr(self, 'loss_%s' % self.criterion_names[k], tmp)
 
         self.loss_total.backward()
 

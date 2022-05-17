@@ -95,6 +95,9 @@ def model_test(models, dataset_test, opt_test, num_test, save_images=False, mode
         mask, mask_path, alt_path = data['mask'], data['mask_paths'][0], data['alt_paths'][0]
         basename = os.path.basename(data['alt_paths'][0])
         basename = basename[:len(basename) - len(MODALITIES[0]) - len(SUFFIX) - 1]
+        # x, y = 181, 217
+        # z = 181
+        # c = np.zeros((x, y, z))
 
         mask_pred = 0
         for k, orientation in enumerate(orientations):
@@ -116,6 +119,11 @@ def model_test(models, dataset_test, opt_test, num_test, save_images=False, mode
                     current_visuals = current_model.get_current_visuals()
                     weight_this_model = 1 if models_weight is None else models_weight[m]
                     slice_this_model = np.squeeze(current_visuals['fake_mask'].cpu().numpy())[sl]
+                    # a = slice_this_model
+                    # c[:, :, j] = a
+                    # if j == 180:
+                    #     alt_image = nib.load(alt_path)
+                    #     nib.Nifti1Image(c, alt_image.affine, alt_image.header).to_filename('123.nii.gz')
                     slice_all_models += slice_this_model * weight_this_model
                 numerator = len(models) if models_weight is None else np.sum(models_weight)
                 slice_all_models = np.array(slice_all_models) / numerator

@@ -111,7 +111,7 @@ class BaseModel():
 
                 if len(self.gpu_ids) > 0 and torch.cuda.is_available():
                     # to use hiddenlayer, change net.module.cpu() to be net.cpu()
-                    torch.save(net.module.cpu().state_dict(), save_path)
+                    torch.save(net.cpu().state_dict(), save_path)
                     net.cuda(self.gpu_ids[0])
                 else:
                     torch.save(net.cpu().state_dict(), save_path)

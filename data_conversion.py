@@ -53,6 +53,8 @@ def get_properties():
                 label = hash_file(path_modality)
                 data = nib.load(path_modality).get_fdata()
                 peak = normalize_image(data, modality)
+                if peak == 1001:
+                    print(path_modality)
                 peak = peak[0] if isinstance(peak, np.ndarray) else peak
                 dic_properties[label] = {}
                 dic_properties[label]['path'] = path_modality
@@ -65,6 +67,5 @@ def get_properties():
 
 if __name__ == '__main__':
     assert os.path.exists(PATH_DATASET)
-
-    dic_ids = get_ids()
+    # dic_ids = get_ids()
     dic_properties = get_properties()
